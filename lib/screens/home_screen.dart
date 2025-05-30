@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await messaging.requestPermission();
     final token = await messaging.getToken();
     setState(() => _token = token);
-    print("🔑 FCM Token: $token");
+    print("FCM Token: $token");
 
     FirebaseMessaging.onMessage.listen((message) {
       final title = message.notification?.title ?? message.data['title'];
@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            _token != null ? '📡 FCM Token:\n$_token' : '토큰 가져오는 중...',
+            _token != null ? 'FCM Token:\n$_token' : '토큰 가져오는 중...',
             textAlign: TextAlign.center,
           ),
         ),

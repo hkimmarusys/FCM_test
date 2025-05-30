@@ -47,7 +47,13 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     enableDrag: true,
   );
 
+  // 2. SendPort 가져와서 메시지 전달
   final sendPort = IsolateNameServer.lookupPortByName('overlay_message_port');
+  if (sendPort != null) {
+    sendPort.send(message.notification?.body ?? '메시지 없음');
+  } else {
+    print("SendPort를 찾을 수 없습니다.");
+  }
 }
 
 
@@ -78,7 +84,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'FCM Overlay Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomeScreen(), // 🔹 분리된 HomeScreen
+      home: const HomeScreen(),
     );
   }
 }
