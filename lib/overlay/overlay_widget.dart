@@ -1,38 +1,59 @@
-import 'dart:async';
+// overlay_widget.dart
+import 'dart:isolate';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 class OverlayWidget extends StatefulWidget {
-  final String? message; // nullable message
-
-  const OverlayWidget({super.key, this.message});
+  const OverlayWidget({super.key});
 
   @override
   State<OverlayWidget> createState() => _OverlayWidgetState();
 }
 
 class _OverlayWidgetState extends State<OverlayWidget> {
+  String messageBody = '📭 메시지 없음';
+  ReceivePort? _receivePort;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      FlutterOverlayWindow.closeOverlay();
+    _initReceiver();
+  }
+
+  void _initReceiver() {
+    _receivePort = ReceivePort();
+    // 이름을 등록 (나중에 이 이름으로 SendPort를 찾을 수 있음)
+    IsolateNameServer.registerPortWithName(
+      _receivePort!.sendPort,
+      'overlay_message_port',
+    );
+
+    _receivePort!.listen((data) {
+      print('📨 오버레이 메시지 수신: $data');
+      setState(() {
+        messageBody = data.toString(); // 화면에 표시
+      });
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    final displayMessage = widget.message ?? 'test';
+  void dispose() {
+    if (_receivePort != null) {
+      IsolateNameServer.removePortNameMapping('overlay_message_port');
+      _receivePort!.close();
+    }
+    super.dispose();
+  }
 
-    return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.black54,
-        body: Center(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            color: Colors.white,
-            child: Text(displayMessage),
-          ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black.withOpacity(0.7),
+      body: Center(
+        child: Text(
+          messageBody,
+          style: const TextStyle(fontSize: 24, color: Colors.white),
+          textAlign: TextAlign.center,
         ),
       ),
     );

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -6,6 +8,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart' as overlay;
 import 'firebase_options.dart';
 import 'overlay/overlay_widget.dart';
 import 'screens/home_screen.dart';
+import 'dart:isolate';
 
 final local_notif.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 local_notif.FlutterLocalNotificationsPlugin();
@@ -27,8 +30,7 @@ Future<void> requestOverlayPermission() async {
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  print("📨 [백그라운드] 메시지 수신: ${message.notification?.title}");
+  print("📨 [백그라운드] 메시지 수신: ${message.notification?.body}");
 
   final canDraw = await overlay.FlutterOverlayWindow.isPermissionGranted();
   if (!canDraw) {
@@ -44,7 +46,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     visibility: overlay.NotificationVisibility.visibilityPublic,
     enableDrag: true,
   );
+
+  final sendPort = IsolateNameServer.lookupPortByName('overlay_message_port');
 }
+
 
 @pragma('vm:entry-point')
 void overlayMain() {
