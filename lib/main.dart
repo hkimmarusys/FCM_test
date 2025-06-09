@@ -19,22 +19,22 @@ const local_notif.AndroidNotificationChannel channel = local_notif.AndroidNotifi
   description: 'This channel is used for important notifications.',
   importance: local_notif.Importance.high,
 );
-
+// 권한 요청
 Future<void> requestOverlayPermission() async {
   final granted = await overlay.FlutterOverlayWindow.isPermissionGranted();
   if (!granted) {
     await overlay.FlutterOverlayWindow.requestPermission();
   }
 }
-
+// entry point 설정
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print("📨 [백그라운드] 메시지 수신: ${message.notification?.body}");
+  print("백그라운드 메시지 수신: ${message.notification?.body}");
 
   final canDraw = await overlay.FlutterOverlayWindow.isPermissionGranted();
   if (!canDraw) {
-    print("⚠️ 오버레이 권한 없음");
+    print("오버레이 권한 없음");
     return;
   }
 
@@ -47,7 +47,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     enableDrag: true,
   );
 
-  // 2. SendPort 가져와서 메시지 전달
+  // SendPort 가져와서 메시지 전달
   final sendPort = IsolateNameServer.lookupPortByName('overlay_message_port');
   if (sendPort != null) {
     sendPort.send(message.notification?.body ?? '메시지 없음');
@@ -82,7 +82,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FCM Overlay Demo',
+      title: 'FCM Overlay',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const HomeScreen(),
     );
